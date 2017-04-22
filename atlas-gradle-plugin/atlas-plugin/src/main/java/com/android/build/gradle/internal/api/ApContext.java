@@ -220,6 +220,8 @@ public class ApContext {
 
     public static final String AP_INLINE_APK_FILENAME = "android.apk";
 
+    public static final String AP_INLINE_JAR_FILENAME = "android.jar";
+
     public static final String AP_INLINE_AWB_FILENAME = "awbs";
 
     public static final String APK_FILE_LIST = "apk-files.txt";
