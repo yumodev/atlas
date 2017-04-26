@@ -216,14 +216,15 @@ public class KeepOnlyConfigurationParser
 
             //else if (ConfigurationConstants.VERBOSE_OPTION                                   .startsWith(nextWord)) configuration.verbose                          = parseNoArgument(true);
             //else if (ConfigurationConstants.DONT_NOTE_OPTION                                 .startsWith(nextWord)) configuration.note                             = parseCommaSeparatedList("class name", true, true, false, false, true, false, true, false, configuration.note);
-            //else if (ConfigurationConstants.DONT_WARN_OPTION                                 .startsWith(nextWord)) configuration.warn                             = parseCommaSeparatedList("class name", true, true, false, false, true, false, true, false, configuration.warn);
+            else if (ConfigurationConstants.DONT_WARN_OPTION                                 .startsWith(nextWord)) configuration.warn                             = parseCommaSeparatedList("class name", true, true, false, false, true, false, true, false, configuration.warn);
             //else if (ConfigurationConstants.IGNORE_WARNINGS_OPTION                           .startsWith(nextWord)) configuration.ignoreWarnings                   = parseNoArgument(true);
             //else if (ConfigurationConstants.PRINT_CONFIGURATION_OPTION                       .startsWith(nextWord)) configuration.printConfiguration               = parseOptionalFile();
             //else if (ConfigurationConstants.DUMP_OPTION                                      .startsWith(nextWord)) configuration.dump                             = parseOptionalFile();
             else
             {
-                throw new GradleException("Unsupport option in library " + reader.locationDescription());
-                //sLogger.error("Unsupport option " + reader.locationDescription() + " in " + filePath);
+                //throw new GradleException("Unsupport option in library " + reader.locationDescription());
+                sLogger.error("Unsupport option " + reader.locationDescription());
+                readNextWord(false);
             }
         }
     }

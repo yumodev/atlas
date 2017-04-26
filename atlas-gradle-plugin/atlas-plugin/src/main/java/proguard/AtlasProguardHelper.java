@@ -226,6 +226,7 @@ import com.android.build.gradle.internal.transforms.ProGuardTransform;
 import com.android.build.gradle.internal.variant.BaseVariantOutputData;
 import com.android.builder.model.AndroidLibrary;
 import com.google.common.base.Joiner;
+import com.google.common.collect.Sets;
 import com.taobao.android.builder.AtlasBuildContext;
 import com.taobao.android.builder.dependency.AtlasDependencyTree;
 import com.taobao.android.builder.dependency.model.AwbBundle;
@@ -288,8 +289,12 @@ public class AtlasProguardHelper {
         return awbInOutConfig;
     }
 
+    //TODO move
+    //public static Set<String> blackList = Sets.newHashSet("com.alibaba:eaze","com.alibaba.mobileim:IMKit");
     public static void applyBundleProguardConfigration(final AppVariantContext appVariantContext,
                                                        ProGuardTransform proGuardTransform) {
+
+        Set<String> blackList = appVariantContext.getAtlasExtension().getTBuildConfig().getBundleProguardConfigBlackList();
 
         List<File> proguardFiles = new ArrayList<>();
         VariantScope variantScope = appVariantContext.getScope();
@@ -297,6 +302,13 @@ public class AtlasProguardHelper {
             variantScope.getVariantConfiguration().getFullName()).getAwbBundles()) {
             for (AndroidLibrary androidDependency : awbBundle.getAllLibraryAars()) {
                 File proguardRules = androidDependency.getProguardRules();
+
+                String groupName = androidDependency.getResolvedCoordinates().getGroupId()+":"+androidDependency.getResolvedCoordinates().getArtifactId();
+                if (blackList.contains(groupName)){
+                    sLogger.info("[proguard] skip proguard from " + androidDependency.getResolvedCoordinates());
+                    continue;
+                }
+
                 if (proguardRules.isFile()) {
                     proguardFiles.add(proguardRules);
                     sLogger.warn("[proguard] load proguard from " + androidDependency.getResolvedCoordinates());
