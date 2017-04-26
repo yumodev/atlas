@@ -225,6 +225,7 @@ import com.android.build.gradle.internal.transforms.BaseProguardAction;
 import com.android.build.gradle.internal.transforms.ProGuardTransform;
 import com.android.build.gradle.internal.transforms.ProguardConfigurable;
 import com.android.build.gradle.internal.variant.BaseVariantOutputData;
+import com.taobao.android.builder.extension.TBuildConfig;
 import com.taobao.android.builder.tools.ReflectUtils;
 import org.gradle.api.GradleException;
 import proguard.AtlasProguardHelper;
@@ -240,12 +241,17 @@ public class AtlasProguardTransform extends ProGuardTransform {
     public AppVariantContext appVariantContext;
     public ProGuardTransform oldTransform;
 
+    private TBuildConfig buildConfig;
+
     List<File> defaultProguardFiles = new ArrayList<>();
 
     public AtlasProguardTransform(AppVariantContext appVariantContext, BaseVariantOutputData baseVariantOutputData) {
         super(appVariantContext.getScope(), false);
         this.appVariantContext = appVariantContext;
-        defaultProguardFiles.addAll(appVariantContext.getVariantConfiguration().getProguardFiles(false, new ArrayList<>()));
+        defaultProguardFiles.addAll(
+            appVariantContext.getVariantConfiguration().getProguardFiles(false, new ArrayList<>()));
+
+        this.buildConfig = appVariantContext.getAtlasExtension().getTBuildConfig();
     }
 
     public AtlasProguardTransform(VariantScope variantScope, boolean asJar) {
@@ -257,9 +263,10 @@ public class AtlasProguardTransform extends ProGuardTransform {
 
         try {
 
-            List oldConfigList = (List)ReflectUtils.getField(ProguardConfigurable.class , oldTransform, "configurationFiles");
+            List oldConfigList = (List)ReflectUtils.getField(ProguardConfigurable.class, oldTransform,
+                                                             "configurationFiles");
 
-            List configList = (List)ReflectUtils.getField(ProguardConfigurable.class , this, "configurationFiles");
+            List configList = (List)ReflectUtils.getField(ProguardConfigurable.class, this, "configurationFiles");
 
             configList.addAll(oldConfigList);
 
@@ -279,8 +286,10 @@ public class AtlasProguardTransform extends ProGuardTransform {
         //apply bundle Inout
         AtlasProguardHelper.applyBundleInOutConfigration(appVariantContext, this);
 
-        //apply bundle's configuration
-        AtlasProguardHelper.applyBundleProguardConfigration(appVariantContext, this);
+        //apply bundle's configuration, 做开关控制
+        if (buildConfig.isBundleProguardConfigEnabled()) {
+            AtlasProguardHelper.applyBundleProguardConfigration(appVariantContext, this);
+        }
 
         //apply mapping
         AtlasProguardHelper.applyMapping(appVariantContext, this);
@@ -300,10 +309,8 @@ public class AtlasProguardTransform extends ProGuardTransform {
 
     @Override
     public void applyConfigurationFile(File file) throws IOException, ParseException {
-
         //appVariantContext.getVariantConfiguration().getProguardFiles(false, new ArrayList<>());
-
-        if (!defaultProguardFiles.contains(file)) {
+        if (!defaultProguardFiles.contains(file) && buildConfig.isLibraryProguardKeepOnly()) {
             appVariantContext.getProject().getLogger().info("applyConfigurationFile keep only :" + file);
             applyLibConfigurationFile(file);
             return;

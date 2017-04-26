@@ -289,6 +289,12 @@ public class TBuildConfig {
     @Config(message = "需要进行databinding的bundle， 值为 packageName ", order = 13, advance = true, group = "atlas")
     private Set<String> dataBindingBundles = new HashSet<>();
 
+    @Config(message = "proguard是否需要读取bundle中的混淆配置", order = 14, advance = true, group = "atlas")
+    private boolean bundleProguardConfigEnabled = true;
+
+    @Config(message = "依赖中的混淆是否只读取keep规则", order = 15, advance = true, group = "atlas")
+    private boolean libraryProguardKeepOnly = true;
+
     @Deprecated
     private Set<String> insideOfApkBundles = Sets.newHashSet();
 
@@ -464,5 +470,21 @@ public class TBuildConfig {
 
     public void setIncremental(boolean incremental) {
         this.incremental = incremental;
+    }
+
+    public boolean isBundleProguardConfigEnabled() {
+        return bundleProguardConfigEnabled;
+    }
+
+    public void setBundleProguardConfigEnabled(boolean bundleProguardConfigEnabled) {
+        this.bundleProguardConfigEnabled = bundleProguardConfigEnabled;
+    }
+
+    public boolean isLibraryProguardKeepOnly() {
+        return libraryProguardKeepOnly;
+    }
+
+    public void setLibraryProguardKeepOnly(boolean libraryProguardKeepOnly) {
+        this.libraryProguardKeepOnly = libraryProguardKeepOnly;
     }
 }
