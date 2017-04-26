@@ -209,6 +209,12 @@
 
 package com.taobao.android.builder.manager;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.function.Consumer;
+
 import com.android.build.api.transform.QualifiedContent;
 import com.android.build.gradle.AppExtension;
 import com.android.build.gradle.api.ApplicationVariant;
@@ -263,16 +269,9 @@ import com.taobao.android.builder.tasks.tpatch.TPatchDiffApkBuildTask;
 import com.taobao.android.builder.tasks.tpatch.TPatchDiffResAPBuildTask;
 import com.taobao.android.builder.tasks.tpatch.TPatchTask;
 import com.taobao.android.builder.tasks.transform.AtlasMultiDexTransform;
+import com.taobao.android.builder.tasks.transform.AtlasProguardTransform;
 import com.taobao.android.builder.tasks.transform.ClassInjectTransform;
-import com.taobao.android.builder.tasks.transform.hook.AwbProguradHook;
-
 import org.gradle.api.Project;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.function.Consumer;
 
 /**
  * MTL插件编译apk的任务管理
@@ -381,19 +380,19 @@ public class AtlasAppTaskManager extends AtlasBaseTaskManager {
 
                     // create the stream generated from this task
                     variantScope.getTransformManager()
-                            .addStream(OriginalStream.builder()
-                                               .addContentType(QualifiedContent.DefaultContentType.RESOURCES)
-                                               .addScope(QualifiedContent.Scope.PROJECT)
-                                               .setFolders(new Supplier<Collection<File>>() {
-                                                   @Override
-                                                   public Collection<File> get() {
-                                                       return ImmutableList.of(new File(
-                                                               appVariantContext.apContext.getBaseApk() + "_"));
-                                                   }
-                                               })
-                                               // .setFolder(variantScope.getSourceFoldersJavaResDestinationDir())
-                                               // .setDependency(processJavaResourcesTask.getName())
-                                               .build());
+                        .addStream(OriginalStream.builder()
+                                       .addContentType(QualifiedContent.DefaultContentType.RESOURCES)
+                                       .addScope(QualifiedContent.Scope.PROJECT)
+                                       .setFolders(new Supplier<Collection<File>>() {
+                                           @Override
+                                           public Collection<File> get() {
+                                               return ImmutableList.of(new File(
+                                                   appVariantContext.apContext.getBaseApk() + "_"));
+                                           }
+                                       })
+                                       // .setFolder(variantScope.getSourceFoldersJavaResDestinationDir())
+                                       // .setDependency(processJavaResourcesTask.getName())
+                                       .build());
 
                 }
 
@@ -432,6 +431,12 @@ public class AtlasAppTaskManager extends AtlasBaseTaskManager {
                         TransformManager.replaceTransformTask(appVariantContext, vod, MultiDexTransform.class,
                                                               AtlasMultiDexTransform.class);
                     }
+                }
+
+                List<BaseVariantOutputData> baseVariantOutputDataList = appVariantContext.getVariantOutputData();
+                for (final BaseVariantOutputData vod : baseVariantOutputDataList) {
+                    TransformManager.replaceTransformTask(appVariantContext, vod, ProGuardTransform.class,
+                                                          AtlasProguardTransform.class);
                 }
 
             }

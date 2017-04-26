@@ -211,15 +211,25 @@ package com.taobao.android.builder.tasks.transform;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.function.Supplier;
 
+import com.android.annotations.NonNull;
 import com.android.build.api.transform.TransformException;
 import com.android.build.api.transform.TransformInvocation;
 import com.android.build.gradle.internal.api.AppVariantContext;
 import com.android.build.gradle.internal.scope.VariantScope;
+import com.android.build.gradle.internal.transforms.BaseProguardAction;
 import com.android.build.gradle.internal.transforms.ProGuardTransform;
-import com.taobao.android.builder.tools.proguard.AtlasProguardHelper;
+import com.android.build.gradle.internal.transforms.ProguardConfigurable;
+import com.android.build.gradle.internal.variant.BaseVariantOutputData;
+import com.taobao.android.builder.tools.ReflectUtils;
+import org.gradle.api.GradleException;
+import proguard.AtlasProguardHelper;
+import proguard.Configuration;
+import proguard.KeepOnlyConfigurationParser;
 import proguard.ParseException;
 
 /**
@@ -228,7 +238,15 @@ import proguard.ParseException;
 public class AtlasProguardTransform extends ProGuardTransform {
 
     public AppVariantContext appVariantContext;
-    public ProGuardTransform proGuardTransform;
+    public ProGuardTransform oldTransform;
+
+    List<File> defaultProguardFiles = new ArrayList<>();
+
+    public AtlasProguardTransform(AppVariantContext appVariantContext, BaseVariantOutputData baseVariantOutputData) {
+        super(appVariantContext.getScope(), false);
+        this.appVariantContext = appVariantContext;
+        defaultProguardFiles.addAll(appVariantContext.getVariantConfiguration().getProguardFiles(false, new ArrayList<>()));
+    }
 
     public AtlasProguardTransform(VariantScope variantScope, boolean asJar) {
         super(variantScope, asJar);
@@ -237,17 +255,38 @@ public class AtlasProguardTransform extends ProGuardTransform {
     @Override
     public void transform(TransformInvocation invocation) throws TransformException {
 
+        try {
+
+            List oldConfigList = (List)ReflectUtils.getField(ProguardConfigurable.class , oldTransform, "configurationFiles");
+
+            List configList = (List)ReflectUtils.getField(ProguardConfigurable.class , this, "configurationFiles");
+
+            configList.addAll(oldConfigList);
+
+            Configuration configuration = (Configuration)ReflectUtils.getField(BaseProguardAction.class,
+                                                                               oldTransform, "configuration");
+            if (null == this.configuration.keep) {
+                this.configuration.keep = new ArrayList();
+            }
+            if (null != configuration.keep) {
+                this.configuration.keep.addAll(configuration.keep);
+            }
+
+        } catch (Exception e) {
+            throw new GradleException(e.getMessage(), e);
+        }
+
         //apply bundle Inout
-        AtlasProguardHelper.applyBundleInOutConfigration(appVariantContext,this);
+        AtlasProguardHelper.applyBundleInOutConfigration(appVariantContext, this);
 
         //apply bundle's configuration
-
+        AtlasProguardHelper.applyBundleProguardConfigration(appVariantContext, this);
 
         //apply mapping
-        AtlasProguardHelper.applyMapping(appVariantContext,this);
+        AtlasProguardHelper.applyMapping(appVariantContext, this);
 
         //set output
-        File proguardOutFile = new File(appVariantContext.getProject().getBuildDir(),"outputs/proguard.cfg");
+        File proguardOutFile = new File(appVariantContext.getProject().getBuildDir(), "outputs/proguard.cfg");
         this.printconfiguration(proguardOutFile);
 
         super.transform(invocation);
@@ -261,6 +300,25 @@ public class AtlasProguardTransform extends ProGuardTransform {
 
     @Override
     public void applyConfigurationFile(File file) throws IOException, ParseException {
+
+        //appVariantContext.getVariantConfiguration().getProguardFiles(false, new ArrayList<>());
+
+        if (!defaultProguardFiles.contains(file)) {
+            appVariantContext.getProject().getLogger().info("applyConfigurationFile keep only :" + file);
+            applyLibConfigurationFile(file);
+            return;
+        }
+        appVariantContext.getProject().getLogger().info("applyConfigurationFile :" + file);
         super.applyConfigurationFile(file);
+    }
+
+    public void applyLibConfigurationFile(@NonNull File file) throws IOException, ParseException {
+        KeepOnlyConfigurationParser parser =
+            new KeepOnlyConfigurationParser(file, System.getProperties());
+        try {
+            parser.parse(configuration);
+        } finally {
+            parser.close();
+        }
     }
 }

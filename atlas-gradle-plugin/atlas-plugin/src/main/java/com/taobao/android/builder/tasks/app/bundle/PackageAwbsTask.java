@@ -377,8 +377,8 @@ public class PackageAwbsTask extends BaseTask {
                         monitors.put(awbBundle.getName(),
                                      new Long[] {endDex - start, endPackage - endDex});
                     } catch (Throwable e) {
-                        e.printStackTrace();
-                        throw new GradleException("package " + awbBundle.getName() + " failed");
+                        //e.printStackTrace();
+                        throw new GradleException("package " + awbBundle.getName() + " failed",e);
                     }
                 }
             });

@@ -207,132 +207,133 @@
  *
  */
 
-package com.taobao.android.builder.tasks.transform.hook;
+package proguard;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Supplier;
 
 import com.android.build.gradle.internal.api.AppVariantContext;
 import com.android.build.gradle.internal.api.AppVariantOutputContext;
-import com.android.build.gradle.internal.pipeline.TransformTask;
 import com.android.build.gradle.internal.scope.GlobalScope;
 import com.android.build.gradle.internal.scope.VariantScope;
 import com.android.build.gradle.internal.transforms.ProGuardTransform;
 import com.android.build.gradle.internal.variant.BaseVariantOutputData;
-import com.android.builder.core.VariantConfiguration;
+import com.android.builder.model.AndroidLibrary;
 import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 import com.taobao.android.builder.AtlasBuildContext;
 import com.taobao.android.builder.dependency.AtlasDependencyTree;
-import com.taobao.android.builder.tools.proguard.AwbProguardConfiguration;
-import org.gradle.api.Action;
+import com.taobao.android.builder.dependency.model.AwbBundle;
 import org.gradle.api.GradleException;
-import org.gradle.api.Task;
-import org.gradle.api.tasks.TaskCollection;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-import java.util.function.Supplier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.android.builder.model.AndroidProject.FD_OUTPUTS;
 
 /**
  * Created by wuzhong on 2016/12/9.
  */
-@Deprecated
-public class AwbProguradHook {
+public class AtlasProguardHelper {
 
-    /**
-     * hook混淆的任务,加入awb的混淆配置
-     *
-     * @param appVariantContext
-     */
-    public void hookProguardTask(final AppVariantContext appVariantContext) {
-        final VariantScope variantScope = appVariantContext.getScope();
-        List<TransformTask> proguaradTransformTasks = getTransformTaskByTransformType(appVariantContext, ProGuardTransform.class);
-        for (TransformTask proguaradTransformTask : proguaradTransformTasks) {
-            final ProGuardTransform proGuardTransform = (ProGuardTransform) proguaradTransformTask.getTransform();
-            if (null != proGuardTransform) {
+    private static Logger sLogger = LoggerFactory.getLogger(AtlasProguardHelper.class);
 
-                proguaradTransformTask.doFirst(new Action<Task>() {
-                    @Override
-                    public void execute(Task task) {
-                        GlobalScope globalScope = variantScope.getGlobalScope();
-                        File proguardOut = new File(Joiner.on(File.separatorChar).join(String.valueOf(globalScope.getBuildDir()), FD_OUTPUTS, "mapping", variantScope.getVariantConfiguration().getDirName()));
-                        //为了方便排查,先把configuration打印到目录
-                        proGuardTransform.printconfiguration(new File(proguardOut, "tmp_config.cfg"));
-                        final File outConfigFile = new File(proguardOut, "awb_config.cfg");
+    public static File applyBundleInOutConfigration(final AppVariantContext appVariantContext,
+                                                    ProGuardTransform proGuardTransform) {
 
-                        //增加awb的配置
-                        AtlasDependencyTree dependencyTree = AtlasBuildContext.androidDependencyTrees.get(variantScope.getVariantConfiguration().getFullName());
+        VariantScope variantScope = appVariantContext.getScope();
 
-                        if (dependencyTree.getAwbBundles().size() > 0) {
+        GlobalScope globalScope = variantScope.getGlobalScope();
+        File proguardOut = new File(Joiner.on(File.separatorChar)
+                                        .join(String.valueOf(globalScope.getBuildDir()), FD_OUTPUTS, "mapping",
+                                              variantScope.getVariantConfiguration().getDirName()));
 
-                            BaseVariantOutputData vod = appVariantContext.getVariantData().getOutputs().get(0);
-                            AppVariantOutputContext appVariantOutputContext = getAppVariantOutputContext(appVariantContext, vod);
-                            File awbObfuscatedDir = new File(globalScope.getIntermediatesDir(), "/classes-proguard/" + variantScope.getVariantConfiguration().getDirName());
-                            AwbProguardConfiguration awbProguardConfiguration = new AwbProguardConfiguration(appVariantOutputContext.getAwbTransformMap().values(), awbObfuscatedDir, appVariantOutputContext);
-                            try {
-                                awbProguardConfiguration.printConfigFile(outConfigFile);
-                            } catch (IOException e) {
-                                throw new GradleException("", e);
-                            }
-                            proGuardTransform.setConfigurationFiles(new Supplier<Collection<File>>() {
-                                @Override
-                                public Collection<File> get() {
-                                    Set<File> proguardFiles = new HashSet<File>();
-                                    ((HashSet<File>) proguardFiles).add(outConfigFile);
-                                    return proguardFiles;
-                                }
-                            });
-                        }
+        File awbInOutConfig = new File(proguardOut, "awb_inout_config.cfg");
 
-                        File mappingFile = null;
-                        if (null != appVariantContext.apContext.getApExploredFolder() && appVariantContext.apContext.getApExploredFolder().exists()) {
-                            mappingFile = new File(appVariantContext.apContext.getApExploredFolder(), "mapping.txt");
-                        } else {
-                            mappingFile = new File(appVariantContext.getScope().getGlobalScope().getProject().getProjectDir(), "mapping.txt");
-                        }
+        //增加awb的配置
+        AtlasDependencyTree dependencyTree = AtlasBuildContext.androidDependencyTrees.get(
+            variantScope.getVariantConfiguration().getFullName());
 
-                        if (null != mappingFile && mappingFile.exists()) {
-                            proGuardTransform.applyTestedMapping(mappingFile);
-                        }
-                    }
+        if (dependencyTree.getAwbBundles().size() > 0) {
 
-                });
+            BaseVariantOutputData vod = appVariantContext.getVariantData().getOutputs().get(0);
+            AppVariantOutputContext appVariantOutputContext = appVariantContext.getAppVariantOutputContext(vod);
+            File awbObfuscatedDir = new File(globalScope.getIntermediatesDir(),
+                                             "/classes-proguard/" + variantScope.getVariantConfiguration()
+                                                 .getDirName());
+            AwbProguardConfiguration awbProguardConfiguration = new AwbProguardConfiguration(
+                appVariantOutputContext.getAwbTransformMap().values(), awbObfuscatedDir, appVariantOutputContext);
+
+            try {
+                awbProguardConfiguration.printConfigFile(awbInOutConfig);
+            } catch (IOException e) {
+                throw new GradleException("", e);
             }
 
+            proGuardTransform.setConfigurationFiles(new Supplier<Collection<File>>() {
+                @Override
+                public Collection<File> get() {
+                    Set<File> proguardFiles = new HashSet<File>();
+                    ((HashSet<File>)proguardFiles).add(awbInOutConfig);
+                    return proguardFiles;
+                }
+            });
+
         }
 
-
+        return awbInOutConfig;
     }
 
-    private AppVariantOutputContext getAppVariantOutputContext(AppVariantContext appVariantContext, BaseVariantOutputData vod) {
+    public static void applyBundleProguardConfigration(final AppVariantContext appVariantContext,
+                                                       ProGuardTransform proGuardTransform) {
 
-        AppVariantOutputContext appVariantOutputContext = (AppVariantOutputContext) appVariantContext.getOutputContextMap().get(vod.getFullName());
-
-        if (null == appVariantOutputContext) {
-            appVariantOutputContext =
-                    new AppVariantOutputContext(vod.getFullName(), appVariantContext, vod.getScope(), vod.variantData);
-            appVariantContext.getOutputContextMap().put(vod.getFullName(), appVariantOutputContext);
-        }
-
-        return appVariantOutputContext;
-    }
-
-    private List<TransformTask> getTransformTaskByTransformType(AppVariantContext appVariantContext, Class<?> transformClass) {
-        List<TransformTask> transformTasksList = Lists.newArrayList();
-        VariantConfiguration config = appVariantContext.getVariantConfiguration();
-        TaskCollection<TransformTask> transformTasks = appVariantContext.getProject().getTasks().withType(TransformTask.class);
-        SortedMap<String, TransformTask> transformTaskSortedMap = transformTasks.getAsMap();
-        String variantName = config.getFullName();
-        for (String taskName : transformTaskSortedMap.keySet()) {
-            TransformTask transformTask = transformTaskSortedMap.get(taskName);
-            if (variantName.equals(transformTask.getVariantName())) {
-                if (transformTask.getTransform().getClass().equals(transformClass)) {
-                    transformTasksList.add(transformTask);
+        List<File> proguardFiles = new ArrayList<>();
+        VariantScope variantScope = appVariantContext.getScope();
+        for (AwbBundle awbBundle : AtlasBuildContext.androidDependencyTrees.get(
+            variantScope.getVariantConfiguration().getFullName()).getAwbBundles()) {
+            for (AndroidLibrary androidDependency : awbBundle.getAllLibraryAars()) {
+                File proguardRules = androidDependency.getProguardRules();
+                if (proguardRules.isFile()) {
+                    proguardFiles.add(proguardRules);
+                    sLogger.warn("[proguard] load proguard from " + androidDependency.getResolvedCoordinates());
+                } else {
+                    sLogger.info("[proguard] missing proguard from " + androidDependency.getResolvedCoordinates());
                 }
             }
         }
-        return transformTasksList;
+
+        proGuardTransform.setConfigurationFiles(new Supplier<Collection<File>>() {
+            @Override
+            public Collection<File> get() {
+                return proguardFiles;
+            }
+        });
+
+    }
+
+    public static File applyMapping(final AppVariantContext appVariantContext, ProGuardTransform proGuardTransform) {
+
+        File mappingFile = null;
+        if (null != appVariantContext.apContext.getApExploredFolder() && appVariantContext.apContext
+            .getApExploredFolder().exists()) {
+            mappingFile = new File(appVariantContext.apContext.getApExploredFolder(), "mapping.txt");
+        } else {
+            mappingFile = new File(
+                appVariantContext.getScope().getGlobalScope().getProject().getProjectDir(),
+                "mapping.txt");
+        }
+
+        if (null != mappingFile && mappingFile.exists()) {
+            proGuardTransform.applyTestedMapping(mappingFile);
+            return mappingFile;
+        }
+
+        return null;
+
     }
 
 }
