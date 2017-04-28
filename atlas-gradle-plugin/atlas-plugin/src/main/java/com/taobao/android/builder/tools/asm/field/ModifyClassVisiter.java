@@ -207,224 +207,38 @@
  *
  */
 
-package com.taobao.android.builder.extension;
+package com.taobao.android.builder.tools.asm.field;
 
-import java.io.File;
+import java.util.HashSet;
 import java.util.Set;
 
-import com.google.common.collect.Sets;
-import com.taobao.android.builder.extension.annotation.Config;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.FieldVisitor;
 
 /**
- * Created by shenghua.nish on 2016-05-17 上午9:39.
+ * Created by wuzhong on 2017/4/27.
  */
-public class ManifestOptions {
+public class ModifyClassVisiter extends ClassVisitor {
 
-    @Config(order = 1, message = "保留的启动launch的列表", advance = false, group = "atlas")
-    private Set<String> retainLaunches = Sets.newHashSet();
+    private Set<String> removeFields = new HashSet<>();
 
-    @Config(order = 2, message = "保留的权限列表", advance = false, group = "atlas")
-    private Set<String> retainPermissions = Sets.newHashSet();
-
-    @Config(order = 3, message = "移除的系统权限的名称", advance = true, group = "atlas")
-    private Set<String> removeSystemPermissions = Sets.newHashSet();
-
-    @Config(order = 4, message = "移除的自定义权限的名称", advance = true, group = "atlas")
-    private boolean removeCustomPermission = false;
-
-    @Config(order = 2, message = "权限白名单", advance = true, group = "atlas")
-    private File  permissionListFile;
-
-    @Config(order = 5, message = "组件增加bundle的坐标", advance = true, group = "atlas")
-    private boolean addBundleLocation = true;
-
-    @Config(order = 6, message = "开启新增组件的功能", advance = true, group = "atlas")
-    private boolean addAtlasProxyComponents /*= true*/;
-
-    @Config(order = 6, message = "不进行atlas新增组件功能的channel列表", advance = true, group = "atlas")
-    private Set<String> atlasProxySkipChannels = Sets.newHashSet(":dexmerge", ":dex2oat");
-
-    @Config(order = 7, message = "使用atlas的application，包含 atlas基础初始化及multidex逻辑, 接atlas必须开启", advance = true,
-        group = "atlas")
-    private boolean replaceApplication = true;
-
-    @Config(order = 8, message = "使用atlas的multiDex功能, 接atlas必须开启", advance = true, group = "atlas")
-    private boolean addMultiDexMetaData = true;
-
-    @Config(order = 9, message = "移除所有的provider", advance = true, group = "atlas")
-    private boolean removeProvider = false;
-
-    @Config(order = 10, message = "不参与manifest合并的依赖坐标，group:name,group2:name2", advance = true, group = "atlas")
-    private Set<String> notMergedBundles = Sets.newHashSet();
-
-    public Set<String> getNotMergedBundles() {
-        return notMergedBundles;
+    public ModifyClassVisiter(int api) {
+        super(api);
     }
 
-    public void setNotMergedBundles(Set<String> notMerged) {
-        notMergedBundles = notMerged;
-    }
-
-    /**
-     * 返回要保留的启动launch的列表
-     *
-     * @return
-     */
-
-    public Set<String> getRetainLaunches() {
-        return retainLaunches;
-    }
-
-    /**
-     * 是否移除自定义权限
-     *
-     * @return
-     */
-    public boolean isRemoveCustomPermission() {
-        return removeCustomPermission;
-    }
-
-    public void setRemoveCustomPermission(boolean removeCustomPermission) {
-        this.removeCustomPermission = removeCustomPermission;
-    }
-
-    /**
-     * 返回需要保留的自定义权限的名称
-     *
-     * @return
-     */
-
-    public Set<String> getRetainPermissions() {
-        return retainPermissions;
-    }
-
-    /**
-     * 返回要移除的系统权限的名称
-     *
-     * @return
-     */
-
-    public Set<String> getRemoveSystemPermissions() {
-        return removeSystemPermissions;
-    }
-
-    public void setRetainLaunches(Set<String> retainLaunches) {
-        this.retainLaunches = retainLaunches;
-    }
-
-    /**
-     * Sets extensions of files that will not be stored compressed in the APK.
-     * <p>
-     * <p>Equivalent of the -0 flag. See <code>aapt --help</code>
-     */
-    public void retainLaunches(String retainLaunche) {
-        retainLaunches.add(retainLaunche);
-    }
-
-    /**
-     * Sets extensions of files that will not be stored compressed in the APK.
-     * <p>
-     * <p>Equivalent of the -0 flag. See <code>aapt --help</code>
-     */
-    public void retainLaunches(String... retainLaunche) {
-        for (String str : retainLaunche) {
-            retainLaunches.add(str);
-        }
-    }
-
-    public void setRetainPermissions(Set<String> retainPermissions) {
-        this.retainPermissions = retainPermissions;
-    }
-
-    public void setRemoveSystemPermissions(Set<String> removeSystemPermissions) {
-        this.removeSystemPermissions = removeSystemPermissions;
-    }
-
-    public void removeSystemPermissions(String removeSystemPermission) {
-        removeSystemPermissions.add(removeSystemPermission);
-    }
-
-    public void removeSystemPermissions(String... removeSystemPermission) {
-        for (String str : removeSystemPermission) {
-            removeSystemPermissions.add(str);
-        }
-    }
-
-    public void retainPermissions(String retainPermission) {
-        retainPermissions.add(retainPermission);
-    }
-
-    public void retainPermissions(String... retainPermission) {
-        for (String str : retainPermission) {
-            retainPermissions.add(str);
-        }
-    }
-
-    public boolean isAddBundleLocation() {
-        return addBundleLocation;
-    }
-
-    public void setAddBundleLocation(boolean addBundleLocation) {
-        this.addBundleLocation = addBundleLocation;
-    }
-
-    public boolean isReplaceApplication() {
-        return replaceApplication;
-    }
-
-    public void setReplaceApplication(boolean replaceApplication) {
-        this.replaceApplication = replaceApplication;
-    }
-
-    public boolean isAddMultiDexMetaData() {
-        return addMultiDexMetaData;
-    }
-
-    public void setAddMultiDexMetaData(boolean addMultiDexMetaData) {
-        this.addMultiDexMetaData = addMultiDexMetaData;
-    }
-
-    public boolean isRemoveProvider() {
-        return removeProvider;
-    }
-
-    public void setRemoveProvider(boolean removeProvider) {
-        this.removeProvider = removeProvider;
-    }
-
-    public boolean isAddAtlasProxyComponents() {
-        return addAtlasProxyComponents;
-    }
-
-    public void setAddAtlasProxyComponents(boolean addAtlasProxyComponents) {
-        this.addAtlasProxyComponents = addAtlasProxyComponents;
-    }
-
-    public Set<String> getAtlasProxySkipChannels() {
-        return atlasProxySkipChannels;
-    }
-
-    public void setAtlasProxySkipChannels(Set<String> atlasProxySkipChannels) {
-        this.atlasProxySkipChannels = atlasProxySkipChannels;
-    }
-
-    public File getPermissionListFile() {
-        return permissionListFile;
-    }
-
-    public void setPermissionListFile(File permissionListFile) {
-        this.permissionListFile = permissionListFile;
+    public ModifyClassVisiter(int api, ClassVisitor cv) {
+        super(api, cv);
     }
 
     @Override
-    public String toString() {
-        return "ManifestOptionsImpl{" +
-            "retainLaunches=" + retainLaunches +
-            ", retainPermissions=" + retainPermissions +
-            ", removeSystemPermissions=" + removeSystemPermissions +
-            ", removeCustomPermission=" + removeCustomPermission +
-            ", addBundleLocation=" + addBundleLocation +
-            ", notMergedBundles=" + notMergedBundles +
-            '}';
+    public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
+        if (removeFields.contains(name)) {
+            return null;
+        }
+        return super.visitField(access, name, desc, signature, value);
+    }
+
+    public void addRemoveField(String fieldName) {
+        this.removeFields.add(fieldName);
     }
 }

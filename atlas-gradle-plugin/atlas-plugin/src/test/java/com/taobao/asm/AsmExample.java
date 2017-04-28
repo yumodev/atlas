@@ -207,224 +207,175 @@
  *
  */
 
-package com.taobao.android.builder.extension;
+package com.taobao.asm;
 
-import java.io.File;
-import java.util.Set;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
-import com.google.common.collect.Sets;
-import com.taobao.android.builder.extension.annotation.Config;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 
-/**
- * Created by shenghua.nish on 2016-05-17 上午9:39.
- */
-public class ManifestOptions {
+public class AsmExample extends ClassLoader implements Opcodes {
 
-    @Config(order = 1, message = "保留的启动launch的列表", advance = false, group = "atlas")
-    private Set<String> retainLaunches = Sets.newHashSet();
+    public static class Foo {
+        public static void execute() {
+            System.out.println("test changed method name");
+        }
 
-    @Config(order = 2, message = "保留的权限列表", advance = false, group = "atlas")
-    private Set<String> retainPermissions = Sets.newHashSet();
-
-    @Config(order = 3, message = "移除的系统权限的名称", advance = true, group = "atlas")
-    private Set<String> removeSystemPermissions = Sets.newHashSet();
-
-    @Config(order = 4, message = "移除的自定义权限的名称", advance = true, group = "atlas")
-    private boolean removeCustomPermission = false;
-
-    @Config(order = 2, message = "权限白名单", advance = true, group = "atlas")
-    private File  permissionListFile;
-
-    @Config(order = 5, message = "组件增加bundle的坐标", advance = true, group = "atlas")
-    private boolean addBundleLocation = true;
-
-    @Config(order = 6, message = "开启新增组件的功能", advance = true, group = "atlas")
-    private boolean addAtlasProxyComponents /*= true*/;
-
-    @Config(order = 6, message = "不进行atlas新增组件功能的channel列表", advance = true, group = "atlas")
-    private Set<String> atlasProxySkipChannels = Sets.newHashSet(":dexmerge", ":dex2oat");
-
-    @Config(order = 7, message = "使用atlas的application，包含 atlas基础初始化及multidex逻辑, 接atlas必须开启", advance = true,
-        group = "atlas")
-    private boolean replaceApplication = true;
-
-    @Config(order = 8, message = "使用atlas的multiDex功能, 接atlas必须开启", advance = true, group = "atlas")
-    private boolean addMultiDexMetaData = true;
-
-    @Config(order = 9, message = "移除所有的provider", advance = true, group = "atlas")
-    private boolean removeProvider = false;
-
-    @Config(order = 10, message = "不参与manifest合并的依赖坐标，group:name,group2:name2", advance = true, group = "atlas")
-    private Set<String> notMergedBundles = Sets.newHashSet();
-
-    public Set<String> getNotMergedBundles() {
-        return notMergedBundles;
-    }
-
-    public void setNotMergedBundles(Set<String> notMerged) {
-        notMergedBundles = notMerged;
-    }
-
-    /**
-     * 返回要保留的启动launch的列表
-     *
-     * @return
-     */
-
-    public Set<String> getRetainLaunches() {
-        return retainLaunches;
-    }
-
-    /**
-     * 是否移除自定义权限
-     *
-     * @return
-     */
-    public boolean isRemoveCustomPermission() {
-        return removeCustomPermission;
-    }
-
-    public void setRemoveCustomPermission(boolean removeCustomPermission) {
-        this.removeCustomPermission = removeCustomPermission;
-    }
-
-    /**
-     * 返回需要保留的自定义权限的名称
-     *
-     * @return
-     */
-
-    public Set<String> getRetainPermissions() {
-        return retainPermissions;
-    }
-
-    /**
-     * 返回要移除的系统权限的名称
-     *
-     * @return
-     */
-
-    public Set<String> getRemoveSystemPermissions() {
-        return removeSystemPermissions;
-    }
-
-    public void setRetainLaunches(Set<String> retainLaunches) {
-        this.retainLaunches = retainLaunches;
-    }
-
-    /**
-     * Sets extensions of files that will not be stored compressed in the APK.
-     * <p>
-     * <p>Equivalent of the -0 flag. See <code>aapt --help</code>
-     */
-    public void retainLaunches(String retainLaunche) {
-        retainLaunches.add(retainLaunche);
-    }
-
-    /**
-     * Sets extensions of files that will not be stored compressed in the APK.
-     * <p>
-     * <p>Equivalent of the -0 flag. See <code>aapt --help</code>
-     */
-    public void retainLaunches(String... retainLaunche) {
-        for (String str : retainLaunche) {
-            retainLaunches.add(str);
+        public static void changeMethodContent() {
+            System.out.println("test change method");
         }
     }
 
-    public void setRetainPermissions(Set<String> retainPermissions) {
-        this.retainPermissions = retainPermissions;
+    public static void main(String[] args)
+        throws IOException, IllegalArgumentException, SecurityException, IllegalAccessException,
+               InvocationTargetException {
+
+        ClassReader cr = new ClassReader(Foo.class.getName());
+        ClassWriter cw = new ClassWriter(cr, ClassWriter.COMPUTE_MAXS);
+        ClassVisitor cv = new MethodChangeClassAdapter(cw);
+        cr.accept(cv, Opcodes.ASM4);
+
+        //新增加一个方法  
+        MethodVisitor mw = cw.visitMethod(ACC_PUBLIC + ACC_STATIC,
+                                          "add",
+                                          "([Ljava/lang/String;)V",
+                                          null,
+                                          null);
+        // pushes the 'out' field (of type PrintStream) of the System class  
+        mw.visitFieldInsn(GETSTATIC,
+                          "java/lang/System",
+                          "out",
+                          "Ljava/io/PrintStream;");
+        // pushes the "Hello World!" String constant  
+        mw.visitLdcInsn("this is add method print!");
+        // invokes the 'println' method (defined in the PrintStream class)  
+        mw.visitMethodInsn(INVOKEVIRTUAL,
+                           "java/io/PrintStream",
+                           "println",
+                           "(Ljava/lang/String;)V");
+        mw.visitInsn(RETURN);
+        // this code uses a maximum of two stack elements and two local  
+        // variables  
+        mw.visitMaxs(0, 0);
+        mw.visitEnd();
+
+        // gets the bytecode of the Example class, and loads it dynamically  
+        byte[] code = cw.toByteArray();
+
+        AsmExample loader = new AsmExample();
+        Class<?> exampleClass = loader.defineClass(Foo.class.getName(), code, 0, code.length);
+
+        for (Method method : exampleClass.getMethods()) {
+            System.out.println(method);
+        }
+
+        System.out.println("*************");
+
+        // uses the dynamically generated class to print 'Helloworld'  
+        exampleClass.getMethods()[0].invoke(null, null);  //調用changeMethodContent，修改方法內容  
+
+        System.out.println("*************");
+
+        exampleClass.getMethods()[1].invoke(null, null); //調用execute,修改方法名  
+
+        // gets the bytecode of the Example class, and loads it dynamically  
+
+        FileOutputStream fos = new FileOutputStream("e:\\logs\\Example.class");
+        fos.write(code);
+        fos.close();
     }
 
-    public void setRemoveSystemPermissions(Set<String> removeSystemPermissions) {
-        this.removeSystemPermissions = removeSystemPermissions;
+    static class MethodChangeClassAdapter extends ClassVisitor implements Opcodes {
+
+        public MethodChangeClassAdapter(final ClassVisitor cv) {
+            super(Opcodes.ASM4, cv);
+        }
+
+        @Override
+        public void visit(
+            int version,
+            int access,
+            String name,
+            String signature,
+            String superName,
+            String[] interfaces) {
+            if (cv != null) {
+                cv.visit(version, access, name, signature, superName, interfaces);
+            }
+        }
+
+        @Override
+        public MethodVisitor visitMethod(
+            int access,
+            String name,
+            String desc,
+            String signature,
+            String[] exceptions) {
+            if (cv != null && "execute".equals(name)) { //当方法名为execute时，修改方法名为execute1  
+                return cv.visitMethod(access, name + "1", desc, signature, exceptions);
+            }
+
+            if ("changeMethodContent".equals(name))  //此处的changeMethodContent即为需要修改的方法  ，修改方法內容
+            {
+                MethodVisitor mv = cv.visitMethod(access, name, desc, signature, exceptions);//先得到原始的方法    
+                MethodVisitor newMethod = null;
+                newMethod = new AsmMethodVisit(mv); //访问需要修改的方法    
+                return newMethod;
+            }
+            if (cv != null) {
+                return cv.visitMethod(access, name, desc, signature, exceptions);
+            }
+
+            return null;
+        }
+
     }
 
-    public void removeSystemPermissions(String removeSystemPermission) {
-        removeSystemPermissions.add(removeSystemPermission);
-    }
+    static class AsmMethodVisit extends MethodVisitor {
 
-    public void removeSystemPermissions(String... removeSystemPermission) {
-        for (String str : removeSystemPermission) {
-            removeSystemPermissions.add(str);
+        public AsmMethodVisit(MethodVisitor mv) {
+            super(Opcodes.ASM4, mv);
+        }
+
+        @Override
+        public void visitMethodInsn(int opcode, String owner, String name, String desc) {
+            super.visitMethodInsn(opcode, owner, name, desc);
+        }
+
+        @Override
+        public void visitCode() {
+            //此方法在访问方法的头部时被访问到，仅被访问一次  
+            //此处可插入新的指令  
+            super.visitCode();
+        }
+
+        @Override
+        public void visitInsn(int opcode) {
+            //此方法可以获取方法中每一条指令的操作类型，被访问多次  
+            //如应在方法结尾处添加新指令，则应判断：  
+            if (opcode == Opcodes.RETURN) {
+                // pushes the 'out' field (of type PrintStream) of the System class  
+                mv.visitFieldInsn(GETSTATIC,
+                                  "java/lang/System",
+                                  "out",
+                                  "Ljava/io/PrintStream;");
+                // pushes the "Hello World!" String constant  
+                mv.visitLdcInsn("this is a modify method!");
+                // invokes the 'println' method (defined in the PrintStream class)  
+                mv.visitMethodInsn(INVOKEVIRTUAL,
+                                   "java/io/PrintStream",
+                                   "println",
+                                   "(Ljava/lang/String;)V");
+                //                mv.visitInsn(RETURN);
+            }
+            super.visitInsn(opcode);
         }
     }
 
-    public void retainPermissions(String retainPermission) {
-        retainPermissions.add(retainPermission);
-    }
-
-    public void retainPermissions(String... retainPermission) {
-        for (String str : retainPermission) {
-            retainPermissions.add(str);
-        }
-    }
-
-    public boolean isAddBundleLocation() {
-        return addBundleLocation;
-    }
-
-    public void setAddBundleLocation(boolean addBundleLocation) {
-        this.addBundleLocation = addBundleLocation;
-    }
-
-    public boolean isReplaceApplication() {
-        return replaceApplication;
-    }
-
-    public void setReplaceApplication(boolean replaceApplication) {
-        this.replaceApplication = replaceApplication;
-    }
-
-    public boolean isAddMultiDexMetaData() {
-        return addMultiDexMetaData;
-    }
-
-    public void setAddMultiDexMetaData(boolean addMultiDexMetaData) {
-        this.addMultiDexMetaData = addMultiDexMetaData;
-    }
-
-    public boolean isRemoveProvider() {
-        return removeProvider;
-    }
-
-    public void setRemoveProvider(boolean removeProvider) {
-        this.removeProvider = removeProvider;
-    }
-
-    public boolean isAddAtlasProxyComponents() {
-        return addAtlasProxyComponents;
-    }
-
-    public void setAddAtlasProxyComponents(boolean addAtlasProxyComponents) {
-        this.addAtlasProxyComponents = addAtlasProxyComponents;
-    }
-
-    public Set<String> getAtlasProxySkipChannels() {
-        return atlasProxySkipChannels;
-    }
-
-    public void setAtlasProxySkipChannels(Set<String> atlasProxySkipChannels) {
-        this.atlasProxySkipChannels = atlasProxySkipChannels;
-    }
-
-    public File getPermissionListFile() {
-        return permissionListFile;
-    }
-
-    public void setPermissionListFile(File permissionListFile) {
-        this.permissionListFile = permissionListFile;
-    }
-
-    @Override
-    public String toString() {
-        return "ManifestOptionsImpl{" +
-            "retainLaunches=" + retainLaunches +
-            ", retainPermissions=" + retainPermissions +
-            ", removeSystemPermissions=" + removeSystemPermissions +
-            ", removeCustomPermission=" + removeCustomPermission +
-            ", addBundleLocation=" + addBundleLocation +
-            ", notMergedBundles=" + notMergedBundles +
-            '}';
-    }
-}
+} 
