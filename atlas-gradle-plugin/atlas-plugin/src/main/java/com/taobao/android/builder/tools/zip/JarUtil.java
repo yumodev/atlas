@@ -207,104 +207,78 @@
  *
  */
 
-package com.taobao.android.builder.dependency.parser;
+package com.taobao.android.builder.tools.zip;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.util.Optional;
+import java.io.InputStream;
+import java.util.Enumeration;
+import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.jar.JarOutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
-import com.android.build.gradle.AndroidGradleOptions;
-import com.android.build.gradle.internal.tasks.PrepareLibraryTask;
-import com.android.builder.model.MavenCoordinates;
-import com.android.builder.utils.FileCache;
-import com.android.utils.FileUtils;
-import com.google.common.base.Preconditions;
-import org.apache.commons.lang.StringUtils;
-import org.gradle.api.Project;
-
-import static com.android.builder.model.AndroidProject.FD_INTERMEDIATES;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Created by wuzhong on 2017/3/16.
- *
- * @author wuzhong
- * @date 2017/03/16
+ * Created by wuzhong on 2017/4/29.
  */
-public class DependencyLocationManager {
+public class JarUtil {
 
-    public static File getExploreDir(Project project, MavenCoordinates mavenCoordinates, File bundle, String type,
-                                     String path) {
+    private static Logger sLogger = LoggerFactory.getLogger(JarUtil.class);
 
-        if (!bundle.exists()) {
-            project.getLogger().info("missing " + mavenCoordinates.toString());
-        }
+    public static void removeClass(File jar, Set<String> path) throws IOException {
 
-        Optional<FileCache> buildCache =
-            AndroidGradleOptions.getBuildCache(project);
-        File explodedDir;
-        if (shouldUseBuildCache(project, mavenCoordinates, bundle, buildCache)) { //&& !"awb"
-            // .equals(type)
-            try {
+        JarFile jarFile = new JarFile(jar);
+        File outputFile = new File(jar.getParentFile(), jarFile.getName() + "_tmp");
+        outputFile.delete();
+        outputFile.getParentFile().mkdirs();
+        outputFile.createNewFile();
 
-                explodedDir = buildCache.get().getFileInCache(
-                    PrepareLibraryTask.getBuildCacheInputs(bundle));
+        JarOutputStream jos = new JarOutputStream(new BufferedOutputStream(new FileOutputStream(outputFile)));
 
-                return explodedDir;
+        Enumeration<JarEntry> jarFileEntries = jarFile.entries();
 
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
+        while (jarFileEntries.hasMoreElements()) {
+
+            JarEntry ze = jarFileEntries.nextElement();
+
+            String pathName = ze.getName();
+
+            if (path.contains(pathName)) {
+                sLogger.error("delete " + jar.getAbsolutePath() + "->" + pathName);
+            } else {
+                InputStream inputStream = jarFile.getInputStream(ze);
+                copyStreamToJar(inputStream, jos, pathName, ze.getTime());
             }
-        } else {
-            Preconditions.checkState(
-                !AndroidGradleOptions
-                    .isImprovedDependencyResolutionEnabled(project),
-                "Improved dependency resolution must be used with "
-                    + "build cache.");
-
-            return FileUtils.join(
-                project.getBuildDir(),
-                FD_INTERMEDIATES,
-                "exploded-" + type,
-                path);
         }
+        jarFile.close();
+        IOUtils.closeQuietly(jos);
 
-        //throw new GradleException("set explored dir exception");
+        jar.delete();
+        outputFile.renameTo(jar);
 
     }
 
-    private static boolean shouldUseBuildCache(Project project, MavenCoordinates mavenCoordinates, File bundle,
-                                               Optional<FileCache> buildCache) {
-        if (!PrepareLibraryTask.shouldUseBuildCache(
-            buildCache.isPresent(), mavenCoordinates)) {
-            return false;
+    private static void copyStreamToJar(InputStream zin, ZipOutputStream out, String currentName, long fileTime)
+        throws IOException {
+        // Create new entry for zip file.
+        ZipEntry newEntry = new ZipEntry(currentName);
+        // Make sure there is date and time set.
+        if (fileTime != -1) {
+            newEntry.setTime(fileTime); // If found set it into output file.
         }
-
-        if (!bundle.exists()) {
-            return false;
+        out.putNextEntry(newEntry);
+        if (zin != null) {
+            IOUtils.copy(zin, out);
         }
-
-        if (isAtlas(mavenCoordinates)) { return false; }
-
-        if (StringUtils.isEmpty(mavenCoordinates.getGroupId())) {
-            return true;
-        }
-
-        return !isProjectLibrary(project, bundle);
-    }
-
-    public static boolean isAtlas(MavenCoordinates mavenCoordinates) {
-        if ("atlas_core".equals(mavenCoordinates.getArtifactId())){
-            return true;
-        }
-        return false;
-    }
-
-    public static boolean isProjectLibrary(Project project, File bundle) {
-
-        String rootPath = project.getRootProject().getProjectDir().getAbsolutePath();
-
-        return bundle.getAbsolutePath().startsWith(rootPath);
+        IOUtils.closeQuietly(zin);
 
     }
 
