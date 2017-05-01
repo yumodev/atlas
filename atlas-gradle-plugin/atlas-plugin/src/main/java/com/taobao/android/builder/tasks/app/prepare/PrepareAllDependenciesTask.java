@@ -223,7 +223,6 @@ import com.android.build.gradle.internal.tasks.BaseTask;
 import com.android.build.gradle.internal.tasks.PrepareLibraryTask;
 import com.android.build.gradle.internal.variant.BaseVariantOutputData;
 import com.android.builder.model.AndroidLibrary;
-import com.google.common.collect.Sets;
 import com.taobao.android.builder.AtlasBuildContext;
 import com.taobao.android.builder.dependency.AtlasDependencyTree;
 import com.taobao.android.builder.dependency.model.SoLibrary;
@@ -232,7 +231,6 @@ import com.taobao.android.builder.tasks.manager.MtlBaseTaskAction;
 import com.taobao.android.builder.tools.concurrent.ExecutorServicesHelper;
 import org.apache.commons.io.FileUtils;
 import org.dom4j.DocumentException;
-import org.gradle.api.GradleException;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.OutputDirectories;
 import org.gradle.api.tasks.TaskAction;
@@ -269,7 +267,7 @@ public class PrepareAllDependenciesTask extends BaseTask {
     }
 
     @OutputDirectories
-    public List<File> getOutputDirs() {
+    public List<File> getOutputDirs(){
         List<File> files = new ArrayList<>();
         for (SoLibrary soLibrary : atlasDependencyTree.getAllSoLibraries()) {
             files.add(soLibrary.getFolder());
@@ -278,9 +276,7 @@ public class PrepareAllDependenciesTask extends BaseTask {
             files.add(aarBundle.getFolder());
         }
         return files;
-    }
-
-    ;
+    };
 
     @TaskAction
     void run() throws ExecutionException, InterruptedException, IOException, DocumentException {
@@ -302,9 +298,9 @@ public class PrepareAllDependenciesTask extends BaseTask {
             });
         }
 
-        for (final AndroidLibrary androidLibrary : atlasDependencyTree.getAllAndroidLibrarys()) {
+        for (final AndroidLibrary aarBundle : atlasDependencyTree.getAllAndroidLibrarys()) {
 
-            if (DependencyLocationManager.isProjectLibrary(getProject(), androidLibrary.getFolder())) {
+            if (DependencyLocationManager.isProjectLibrary(getProject(), aarBundle.getFolder())) {
 
                 runnables.add(new Runnable() {
 
@@ -312,37 +308,26 @@ public class PrepareAllDependenciesTask extends BaseTask {
                     public void run() {
 
                         getLogger().info(
-                            "prepare1 " + androidLibrary.getBundle().getAbsolutePath() + "->" + androidLibrary
-                                .getFolder());
+                            "prepare1 " + aarBundle.getBundle().getAbsolutePath() + "->" + aarBundle.getFolder());
 
-                        if (androidLibrary.getFolder().exists()) {
+                        if (aarBundle.getFolder().exists()) {
                             try {
-                                FileUtils.deleteDirectory(androidLibrary.getFolder());
-                                androidLibrary.getFolder().mkdirs();
+                                FileUtils.deleteDirectory(aarBundle.getFolder());
+                                aarBundle.getFolder().mkdirs();
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
                         }
 
-                        PrepareLibraryTask.extract(androidLibrary.getBundle(), androidLibrary.getFolder(),
-                                                   getProject());
-
-                        if (DependencyLocationManager.isAtlas(androidLibrary.getResolvedCoordinates())) {
-                            File jarFile = androidLibrary.getJarFile();
-                            try {
-                                com.taobao.android.builder.tools.zip.JarUtil.removeClass(jarFile, Sets.newHashSet("android/taobao/atlas/framework/FrameworkProperties.class"));
-                            } catch (IOException e) {
-                                throw new GradleException(e.getMessage(), e);
-                            }
-                        }
+                        PrepareLibraryTask.extract(aarBundle.getBundle(), aarBundle.getFolder(), getProject());
 
                     }
                 });
 
             } else {
                 getLogger().info(
-                    "prepare2 " + androidLibrary.getBundle().getAbsolutePath() + "->" + androidLibrary.getFolder());
-                prepareLibrary(androidLibrary);
+                    "prepare2 " + aarBundle.getBundle().getAbsolutePath() + "->" + aarBundle.getFolder());
+                prepareLibrary(aarBundle);
             }
 
         }

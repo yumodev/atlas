@@ -284,20 +284,11 @@ public class DependencyLocationManager {
             return false;
         }
 
-        if (isAtlas(mavenCoordinates)) { return false; }
-
         if (StringUtils.isEmpty(mavenCoordinates.getGroupId())) {
             return true;
         }
 
         return !isProjectLibrary(project, bundle);
-    }
-
-    public static boolean isAtlas(MavenCoordinates mavenCoordinates) {
-        if ("atlas_core".equals(mavenCoordinates.getArtifactId())){
-            return true;
-        }
-        return false;
     }
 
     public static boolean isProjectLibrary(Project project, File bundle) {
