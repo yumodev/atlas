@@ -368,8 +368,6 @@ public class AtlasAppTaskManager extends AtlasBaseTaskManager {
 
                 mtlTaskContextList.add(new MtlTaskContext(TransformTask.class));
 
-                mtlTaskContextList.add(new MtlTaskContext(PackageAwbsTask.ConfigAction.class, null));
-
                 if (atlasExtension.getTBuildConfig().isIncremental()) {
                     mtlTaskContextList.add(new MtlTaskContext(PrepareBaseApkTask.ConfigAction.class,
                                                               null));
@@ -378,21 +376,23 @@ public class AtlasAppTaskManager extends AtlasBaseTaskManager {
 
                     // create the stream generated from this task
                     variantScope.getTransformManager()
-                        .addStream(OriginalStream.builder()
-                                       .addContentType(QualifiedContent.DefaultContentType.RESOURCES)
-                                       .addScope(QualifiedContent.Scope.PROJECT)
-                                       .setFolders(new Supplier<Collection<File>>() {
-                                           @Override
-                                           public Collection<File> get() {
-                                               return ImmutableList.of(new File(
-                                                   appVariantContext.apContext.getBaseApk() + "_"));
-                                           }
-                                       })
-                                       // .setFolder(variantScope.getSourceFoldersJavaResDestinationDir())
-                                       // .setDependency(processJavaResourcesTask.getName())
-                                       .build());
+                            .addStream(OriginalStream.builder()
+                                               .addContentType(QualifiedContent.DefaultContentType.RESOURCES)
+                                               .addScope(QualifiedContent.Scope.PROJECT)
+                                               .setFolders(new Supplier<Collection<File>>() {
+                                                   @Override
+                                                   public Collection<File> get() {
+                                                       return ImmutableList.of(new File(
+                                                               appVariantContext.apContext.getBaseApk() + "_"));
+                                                   }
+                                               })
+                                               // .setFolder(variantScope.getSourceFoldersJavaResDestinationDir())
+                                               // .setDependency(processJavaResourcesTask.getName())
+                                               .build());
 
                 }
+
+                mtlTaskContextList.add(new MtlTaskContext(PackageAwbsTask.ConfigAction.class, null));
 
                 mtlTaskContextList.add(new MtlTaskContext("package"));
 
