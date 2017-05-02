@@ -261,6 +261,9 @@ public class PrepareAaptTask extends BaseTask {
                 aaptOptions.getAdditionalParameters().add("-B");
                 aaptOptions.getAdditionalParameters().add(baseApk.getAbsolutePath());
             }
+            if (appVariantContext.getAtlasExtension().getTBuildConfig().isIncremental()) {
+                aaptOptions.getAdditionalParameters().add("--merge");
+            }
             //AndroidManifest文件不能有修改OR在patch的时候忽略,目前选择在patch的时候忽略
         }
 
