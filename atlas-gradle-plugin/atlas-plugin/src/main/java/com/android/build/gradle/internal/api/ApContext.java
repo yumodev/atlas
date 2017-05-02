@@ -299,6 +299,10 @@ public class ApContext {
         return baseApk;
     }
 
+    public File getBaseAwbDirectory() {
+        return baseAwbDirectory;
+    }
+
     public File getBaseManifest() {
         return baseManifest;
     }

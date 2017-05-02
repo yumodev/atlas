@@ -276,6 +276,7 @@ public class PrepareAPTask extends IncrementalTask {
     @Override
     protected void doFullTaskAction() throws IOException {
         ZipUtils.unzip(apBaseFile, explodedDir.getAbsolutePath());
+        ZipUtils.extractZipFolderToFolder(apContext.getBaseApk(), "lib/armeabi", apContext.getBaseAwbDirectory().getAbsolutePath(), null);
     }
 
     public static class ConfigAction extends MtlBaseTaskAction<PrepareAPTask> {
