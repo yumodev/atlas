@@ -226,7 +226,7 @@ public class KeepOnlyConfigurationParserTest {
 
         File
             file = new File(
-            "/Users/wuzhong/github/atlas/atlas-gradle-plugin/atlas-plugin/src/test/resources/proguard.txt");
+            "src/test/resources/proguard.txt");
 
         Configuration configuration = new Configuration();
 
