@@ -254,7 +254,7 @@ public class PrepareAaptTask extends BaseTask {
         processAndroidResources.setAaptOptions(aaptOptions);
 
         ApContext apContext = appVariantContext.apContext;
-        if (null != apContext && apContext.getBaseApk().exists()) {
+        if (null != apContext && apContext.getBaseApk() != null) {
             File baseApk = appVariantContext.apContext.getBaseApk();
             //需要增加-b参数
             if (!aaptOptions.getAdditionalParameters().contains("-B")) {
