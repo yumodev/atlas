@@ -1,4 +1,4 @@
-package com.taobao.android.builder.tasks;
+package com.taobao.android.builder.tasks.incremental;
 
 import com.android.annotations.NonNull;
 import com.android.build.gradle.internal.api.VariantContext;
