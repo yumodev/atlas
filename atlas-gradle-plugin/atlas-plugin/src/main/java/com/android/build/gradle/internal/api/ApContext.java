@@ -209,6 +209,8 @@
 
 package com.android.build.gradle.internal.api;
 
+import com.android.utils.FileUtils;
+
 import java.io.File;
 
 import static com.android.SdkConstants.ANDROID_MANIFEST_XML;
@@ -314,7 +316,7 @@ public class ApContext {
     }
 
     public File getBaseAwb(String soFileName) {
-        File file = new File(baseAwbDirectory, soFileName);
+        File file = FileUtils.join(baseApkDirectory, "lib", "armeabi", soFileName);
         if (!file.exists()) {
             return null;
         }
