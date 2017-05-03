@@ -320,7 +320,7 @@ public class ApContext {
     }
 
     public File getBaseAwb(String soFileName) {
-        File file = FileUtils.join(baseApkDirectory, "lib", "armeabi", soFileName);
+        File file = FileUtils.join(baseAwbDirectory, soFileName);
         if (!file.exists()) {
             return null;
         }
