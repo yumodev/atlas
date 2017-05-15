@@ -123,6 +123,7 @@ public class ServiceBridge {
                 try {
                     String processName = info.processName;
                     ServiceBridge.obtain(processName).getRemoteDelegate().stopService(service);
+                    ServiceBridge.obtain(processName).mActiveServiceInfo.remove(service);
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 }
@@ -154,18 +155,26 @@ public class ServiceBridge {
 
     public static boolean unbindService(final IServiceConnection conn) {
         String tmp = null;
+        Intent intent = null;
         for (Map.Entry<String,ServiceBridge> entry : sBridges.entrySet()) {
-            if(entry.getValue().mActiveServiceInfo.containsValue(conn)){
-                tmp = entry.getKey();
+                for (Map.Entry<Intent,IServiceConnection> entry1:entry.getValue().mActiveServiceInfo.entrySet()){
+                    if (entry1.getValue().equals(conn)){
+                        intent = (Intent) entry1.getKey();
+                        tmp = entry.getKey();
+                }
             }
         }
         final String processOfRemoteService = tmp;
         if(processOfRemoteService!=null) {
+            final Intent finalIntent = intent;
             sServicehandler.post(new Runnable() {
                 @Override
                 public void run() {
                     try {
                         ServiceBridge.obtain(processOfRemoteService).mRemoteDelegate.unbindService(conn);
+                        ServiceBridge.obtain(processOfRemoteService).mActiveServiceInfo.remove(finalIntent);
+
+
                     } catch (RemoteException e) {
                         e.printStackTrace();
                     }
@@ -264,4 +273,31 @@ public class ServiceBridge {
             connectDelegateService(processName);
         }
     };
+
+    public void stopServiceAll(){
+
+        Intent intent = null;
+        for (Map.Entry<String,ServiceBridge> entry : sBridges.entrySet()) {
+            String processName = entry.getKey();
+            ServiceBridge serviceBridge = entry.getValue();
+            for (Map.Entry<Intent,IServiceConnection> entry1:serviceBridge.mActiveServiceInfo.entrySet()){
+                if (entry1.getValue() == null){
+                    RuntimeVariables.androidApplication.stopService(intent);
+                }else {
+                    try {
+                        serviceBridge.obtain(processName).getRemoteDelegate().unbindService(entry1.getValue());
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+
+        for (Map.Entry<String,ServiceBridge> entry : sBridges.entrySet()) {
+            entry.getValue().mActiveServiceInfo.clear();
+        }
+
+    }
+
+
 }

@@ -208,9 +208,12 @@
 
 package android.taobao.atlas.bridge;
 
+import android.app.Activity;
 import android.app.Application;
 import android.content.ComponentCallbacks;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ProviderInfo;
@@ -336,6 +339,29 @@ public class BridgeApplicationDelegate {
 
     public void onCreate(){
         try {
+
+            if(mCurrentProcessname.endsWith(":welcome")){
+                return;
+            }
+
+            SharedPreferences settings = mRealApplication.getSharedPreferences("com.taobao.tao.welcome.Welcome", Activity.MODE_PRIVATE);
+            boolean shouldCreateTrafficPrompt = settings.getBoolean("shouldCreateTrafficPrompt", true);
+            if (shouldCreateTrafficPrompt){
+                Intent intent = new Intent();
+                intent.setClassName(mRealApplication,"com.taobao.tao.welcome.Welcome");
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                mRealApplication.startActivity(intent);
+//				android.os.Handler handler = new android.os.Handler();
+//				handler.postDelayed(new Runnable() {
+//					@Override
+//					public void run() {
+//            Process.killProcess(Process.myPid());
+
+//					}
+//				},500);
+//            return;
+            }
+
             AdditionalActivityManagerProxy.get().startRegisterReceivers(RuntimeVariables.androidApplication);
             // *3 create real Application
             mRealApplication = (Application) mRawApplication.getBaseContext().getClassLoader().loadClass(mRealApplicationName).newInstance();

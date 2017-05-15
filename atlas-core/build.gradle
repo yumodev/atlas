@@ -1,35 +1,36 @@
 apply plugin: 'com.android.library'
-apply plugin: 'com.github.dcendents.android-maven'
-apply plugin: 'com.jfrog.bintray'
 
 buildscript {
 
+    apply from: 'http://gitlab.alibaba-inc.com/android-build-system/buildscript/raw/master/mtl-versions.gradle'
+
     repositories {
-        mavenCentral()
-        jcenter()
+
+        //本地库，local repository(${user.home}/.m2/repository)
+        mavenLocal()
+        maven {
+            url "http://mvnrepo.alibaba-inc.com/mvn/repository"
+        }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.2.0'
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
-        classpath "com.github.dcendents:android-maven-gradle-plugin:1.4.1"
+        classpath "com.android.tools.build:gradle:${ANDROID_PLUGIN_VERSION}"  //请勿修改,使用统一的版本,方便升级更新
+        classpath "com.taobao.android.gradle:mtl-plugin:${MTL_PLUGIN_VERSION}" //请勿修改,使用统一的版本,方便升级更新
+        //引入其他的插件
     }
 }
-repositories {
-//    flatDir {
-//        dirs 'libs'
-//    }
-    mavenCentral()
-    jcenter()
 
-}
+
+apply from: 'http://gitlab.alibaba-inc.com/android-build-system/buildscript/raw/master/mtl-publish.gradle'
+
 
 group = 'com.taobao.android'
-description = """atlas_core"""
-version '5.0.6-rc52'
+description = """atlas"""
+version "porting_6.7.2.14-SNAPSHOT"
 
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
+
 
 
 dependencies {
@@ -89,45 +90,45 @@ android {
         targetCompatibility JavaVersion.VERSION_1_7
     }
 }
-def siteUrl = 'https://github.com/alibaba/atlas'
-// 项目的主页
-def gitUrl = 'https://github.com/alibaba/atlas'
-// Git仓库的url
-
-install {
-    repositories.mavenInstaller {
-        // This generates POM.xml with proper parameters
-        pom {
-            project {
-                packaging 'aar'
-                // Add your description here
-                name 'atlas' //项目描述
-                groupId 'com.taobao.android'
-                artifactId 'atlas_core'
-                url siteUrl
-                // Set your license
-                licenses {
-                    license {
-                        name 'The Apache Software License, Version 2.0'
-                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                    }
-                }
-                developers {
-                    developer {
-                        id 'alibabaatlas' //填写的一些基本信息
-                        name 'atlas-framework'
-                        email 'alibabaatlasframework@gmail.com'
-                    }
-                }
-                scm {
-                    connection gitUrl
-                    developerConnection gitUrl
-                    url siteUrl
-                }
-            }
-        }
-    }
-}
+//def siteUrl = 'https://github.com/alibaba/atlas'
+//// 项目的主页
+//def gitUrl = 'https://github.com/alibaba/atlas'
+//// Git仓库的url
+//
+//install {
+//    repositories.mavenInstaller {
+//        // This generates POM.xml with proper parameters
+//        pom {
+//            project {
+//                packaging 'aar'
+//                // Add your description here
+//                name 'atlas' //项目描述
+//                groupId 'com.taobao.android'
+//                artifactId 'atlas_core'
+//                url siteUrl
+//                // Set your license
+//                licenses {
+//                    license {
+//                        name 'The Apache Software License, Version 2.0'
+//                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+//                    }
+//                }
+//                developers {
+//                    developer {
+//                        id 'alibabaatlas' //填写的一些基本信息
+//                        name 'atlas-framework'
+//                        email 'alibabaatlasframework@gmail.com'
+//                    }
+//                }
+//                scm {
+//                    connection gitUrl
+//                    developerConnection gitUrl
+//                    url siteUrl
+//                }
+//            }
+//        }
+//    }
+//}
 
 task sourcesJar(type: Jar) {
     from('src/main/java') {
@@ -142,16 +143,16 @@ artifacts {
 
 Properties properties = new Properties()
 properties.load(project.rootProject.file('local.properties').newDataInputStream())
-bintray {
-    user = properties.getProperty("bintray.user")
-    key = properties.getProperty("bintray.apikey")
-    configurations = ['archives']
-    pkg {
-        repo = "maven"
-        name = "atlas" //发布到JCenter上的项目名字
-        websiteUrl = "https://github.com/alibaba/atlas"
-        vcsUrl = gitUrl
-        licenses = ["Apache-2.0"]
-        publish = true
-    }
-}
+//bintray {
+//    user = properties.getProperty("bintray.user")
+//    key = properties.getProperty("bintray.apikey")
+//    configurations = ['archives']
+//    pkg {
+//        repo = "maven"
+//        name = "atlas" //发布到JCenter上的项目名字
+//        websiteUrl = "https://github.com/alibaba/atlas"
+//        vcsUrl = gitUrl
+//        licenses = ["Apache-2.0"]
+//        publish = true
+//    }
+//}
