@@ -274,7 +274,7 @@ public class ServiceBridge {
         }
     };
 
-    public void stopServiceAll(){
+    public static void stopServiceAll(){
 
         Intent intent = null;
         for (Map.Entry<String,ServiceBridge> entry : sBridges.entrySet()) {
