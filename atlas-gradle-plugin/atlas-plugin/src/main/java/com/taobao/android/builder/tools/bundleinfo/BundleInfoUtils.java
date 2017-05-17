@@ -209,15 +209,8 @@
 
 package com.taobao.android.builder.tools.bundleinfo;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
-
 import com.android.build.gradle.internal.api.AppVariantContext;
 import com.google.common.collect.Maps;
 import com.taobao.android.builder.AtlasBuildContext;
@@ -230,6 +223,12 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.dom4j.DocumentException;
 import org.jetbrains.annotations.NotNull;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by wuzhong on 2016/11/24.
@@ -280,10 +279,15 @@ public class BundleInfoUtils {
             bundleInfo = awbBundle.bundleInfo;
         }
 
-        awbBundle.isRemote = appVariantContext.getAtlasExtension()
-            .getTBuildConfig()
-            .getOutOfApkBundles()
-            .contains(artifactId);
+        if (appVariantContext.getAtlasExtension().getTBuildConfig().getInsideOfApkBundles()!= null &&
+                appVariantContext.getAtlasExtension().getTBuildConfig().getInsideOfApkBundles().size() > 0){
+            awbBundle.isRemote = appVariantContext.getAtlasExtension().getTBuildConfig().getInsideOfApkBundles().contains(artifactId);
+        }else {
+            awbBundle.isRemote = appVariantContext.getAtlasExtension()
+                    .getTBuildConfig()
+                    .getOutOfApkBundles()
+                    .contains(artifactId);
+        }
         bundleInfo.setIsInternal(!awbBundle.isRemote);
         bundleInfo.setVersion(baseVersion + "@" + awbBundle.getResolvedCoordinates().getVersion());
         bundleInfo.setPkgName(awbBundle.getPackageName());
