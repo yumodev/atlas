@@ -235,7 +235,12 @@ public class DelegateClassLoader extends ClassLoader {
     public Class<?> loadClass(String className) throws ClassNotFoundException {
         SharedPreferences settings = RuntimeVariables.androidApplication.getSharedPreferences("com.taobao.tao.welcome.Welcome", Activity.MODE_PRIVATE);
         boolean shouldCreateTrafficPrompt = settings.getBoolean("shouldCreateTrafficPrompt", true);
-         if (shouldCreateTrafficPrompt){
+         if (shouldCreateTrafficPrompt &&
+                 (className.toLowerCase().endsWith("service")||className.toLowerCase().endsWith("receiver")) &&
+                 !className.equals("com.google.firebase.iid.FirebaseInstanceIdInternalReceiver") &&
+                 !className.equals("org.android.agoo.gcm.AgooFirebaseInstanceIDService") &&
+                 !className.equals("com.google.firebase.iid.FirebaseInstanceIdReceiver")){
+             Log.e("DelegateClassLoader",className + "start! so kill process!");
             Process.killProcess(Process.myPid());
         }
         return super.loadClass(className);
@@ -243,9 +248,7 @@ public class DelegateClassLoader extends ClassLoader {
 
     @Override
     protected Class<?> findClass(String className) throws ClassNotFoundException {
-        if(className.contains("dexmerge")){
-            Log.e("AtlasBridgeApplcation","find : "+className);
-        }
+
         Class<?> clazz = null;
         try {
             clazz = loadFromInstalledBundles(className,false);

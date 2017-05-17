@@ -288,6 +288,7 @@ public class BundleInfoUtils {
                     .getOutOfApkBundles()
                     .contains(artifactId);
         }
+        if (artifactId.equals(""))
         bundleInfo.setIsInternal(!awbBundle.isRemote);
         bundleInfo.setVersion(baseVersion + "@" + awbBundle.getResolvedCoordinates().getVersion());
         bundleInfo.setPkgName(awbBundle.getPackageName());

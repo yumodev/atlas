@@ -220,38 +220,16 @@ import android.taobao.atlas.runtime.InstrumentationHook;
 import android.taobao.atlas.runtime.LowDiskException;
 import android.taobao.atlas.runtime.RuntimeVariables;
 import android.taobao.atlas.util.*;
-import android.taobao.atlas.util.AtlasFileLock;
 import android.taobao.atlas.versionInfo.BaselineInfoManager;
 import android.text.TextUtils;
 import android.util.Log;
+import org.osgi.framework.*;
 
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleEvent;
-import org.osgi.framework.BundleException;
-import org.osgi.framework.BundleListener;
-import org.osgi.framework.Constants;
-import org.osgi.framework.FrameworkEvent;
-import org.osgi.framework.FrameworkListener;
-
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Dictionary;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class Framework {
@@ -337,7 +315,7 @@ public final class Framework {
     /**
      * system bundle.
      */
-    static SystemBundle systemBundle;
+    public static SystemBundle systemBundle;
 
 
     // the fields
@@ -442,7 +420,7 @@ public final class Framework {
             BaselineInfoManager.instance().checkUpdateBundles(STORAGE_LOCATION);
         }
 
-        notifyFrameworkListeners(0 /* STARTING */, systemBundle, null);
+//        notifyFrameworkListeners(0 /* STARTING */, systemBundle, null);
         // save the metadata
         if (init) {
             try {
@@ -454,9 +432,9 @@ public final class Framework {
 
         final long timediff = System.currentTimeMillis() - time;
 
-        systemBundle.state = Bundle.ACTIVE;
+//        systemBundle.state = Bundle.ACTIVE;
         try {
-            notifyFrameworkListeners(FrameworkEvent.STARTED, systemBundle, null);
+//            notifyFrameworkListeners(FrameworkEvent.STARTED, systemBundle, null);
         } catch (Exception e) {
             throw new RuntimeException("notifyFrameworkListeners failed", e);
         }
@@ -1262,7 +1240,7 @@ public final class Framework {
      * @param bundle the bundle.
      * @param throwable a throwable.
      */
-    static void notifyFrameworkListeners(final int state, final Bundle bundle, final Throwable throwable) {
+    public static void notifyFrameworkListeners(final int state, final Bundle bundle, final Throwable throwable) {
 
         if (frameworkListeners.isEmpty()) {
             return;

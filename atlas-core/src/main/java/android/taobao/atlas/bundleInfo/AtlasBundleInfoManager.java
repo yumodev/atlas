@@ -293,6 +293,9 @@ public class AtlasBundleInfoManager {
     }
 
     public boolean isInternalBundle(String bundleName){
+        if (bundleName.equals("com.taobao.tao.update")){
+            return true;
+        }
         InitBundleInfoByVersionIfNeed();
         if (mCurrentBundleListing == null || mCurrentBundleListing.getBundles()==null || mCurrentBundleListing.getBundles().size() ==0){
             getBundleInfoFromManifestIfNeed();
