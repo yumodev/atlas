@@ -208,21 +208,22 @@
 
 package android.taobao.atlas.runtime;
 
-import java.io.File;
-import java.util.List;
-
+import android.app.Activity;
 import android.content.ComponentName;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Looper;
+import android.os.Process;
 import android.taobao.atlas.bundleInfo.AtlasBundleInfoManager;
 import android.taobao.atlas.framework.Atlas;
 import android.taobao.atlas.framework.BundleImpl;
+import android.taobao.atlas.framework.Framework;
 import android.taobao.atlas.util.FileUtils;
+import android.util.Log;
 import org.osgi.framework.Bundle;
 
-import android.taobao.atlas.framework.Framework;
-import android.util.Log;
+import java.util.List;
 
 public class DelegateClassLoader extends ClassLoader {
     
@@ -232,6 +233,11 @@ public class DelegateClassLoader extends ClassLoader {
 
     @Override
     public Class<?> loadClass(String className) throws ClassNotFoundException {
+        SharedPreferences settings = RuntimeVariables.androidApplication.getSharedPreferences("com.taobao.tao.welcome.Welcome", Activity.MODE_PRIVATE);
+        boolean shouldCreateTrafficPrompt = settings.getBoolean("shouldCreateTrafficPrompt", true);
+         if (shouldCreateTrafficPrompt){
+            Process.killProcess(Process.myPid());
+        }
         return super.loadClass(className);
     }
 

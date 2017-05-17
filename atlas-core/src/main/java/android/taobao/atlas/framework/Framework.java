@@ -488,6 +488,7 @@ public final class Framework {
 
     private static void initialize() {
         BUNDLE_LOCATION = properties.getProperty("android.taobao.atlas.jars", "file:" + BASEDIR);
+        properties.setProperty("android.taobao.atlas.welcome","com.taobao.tao.welcome.Welcome");
         CLASSLOADER_BUFFER_SIZE = getProperty("android.taobao.atlas.classloader.buffersize", 2048);
         LOG_LEVEL = getProperty("android.taobao.atlas.log.level", Log.ERROR);
         DEBUG_BUNDLES = getProperty("android.taobao.atlas.debug.bundles", false);
