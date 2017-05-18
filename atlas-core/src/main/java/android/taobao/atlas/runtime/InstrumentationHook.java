@@ -603,18 +603,7 @@ public class InstrumentationHook extends Instrumentation {
 
     @Override
     public void callActivityOnCreate(Activity activity, Bundle icicle) {
-		if (RuntimeVariables.androidApplication.getPackageName().equals(activity.getPackageName())
-				&& !activity.getClass().getSimpleName().equals("Welcome")
-				&& !activity.getClass().getSimpleName().equals("Welcome_1")
-				&& !activity.getClass().getSimpleName().equals("MainActivity3")) {
-			SharedPreferences settings = RuntimeVariables.androidApplication.getSharedPreferences("com.taobao.tao.welcome.Welcome", Activity.MODE_PRIVATE);
-			boolean shouldCreateTrafficPrompt = settings.getBoolean("shouldCreateTrafficPrompt", true);
-			Log.e("shouldCreateTrafficPrompt", String.valueOf(shouldCreateTrafficPrompt) + "-----" + activity.getClass().getName());
-			if (shouldCreateTrafficPrompt) {
-				android.os.Process.killProcess(Process.myPid());
-			}
 
-		}
 		if(!RuntimeVariables.androidApplication.getPackageName().equals(activity.getPackageName())){
             mBase.callActivityOnCreate(activity, icicle);
             return;
