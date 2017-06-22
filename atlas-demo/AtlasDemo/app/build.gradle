@@ -8,6 +8,9 @@ apply plugin: 'com.taobao.atlas'
 repositories {
     mavenLocal()
     jcenter()
+    maven {
+        url 'https://download.01.org/crosswalk/releases/crosswalk/android/maven2'
+    }
 }
 
 android {
@@ -84,6 +87,9 @@ dependencies {
 
         transitive = true
     }
+
+    //compile project(":remotelibrary");
+    //compile 'org.xwalk:xwalk_core_library:19.49.514.5@aar'
 
 
     compile project(':middlewarelibrary')

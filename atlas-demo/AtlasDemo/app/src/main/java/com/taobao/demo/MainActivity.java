@@ -37,12 +37,18 @@ public class MainActivity extends AppCompatActivity
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
             switch (item.getItemId()) {
                 case R.id.navigation_home:
-                    switchToActivity("home","com.taobao.firstbundle.FirstBundleActivity");
+//                    switchToActivity("test","com.taobao.firstbundle.FirstTestActivity");
+                    Intent intent = new Intent();
+                    intent.setClassName(MainActivity.this, "com.taobao.firstbundle.FirstTestActivity");
+                    startActivity(intent);
                     return true;
                 case R.id.navigation_dashboard:
                     switchToActivity("second","com.taobao.secondbundle.SecondBundleActivity");
                     return true;
                 case R.id.navigation_notifications:
+                    Intent intent1 = new Intent();
+                    intent1.setClass(MainActivity.this, TestActivity.class);
+                    startActivity(intent1);
 //                    Intent intent3 = new Intent();
 //                    intent3.setClassName(getBaseContext(),"com.taobao.firstBundle.FirstBundleActivity");
 //                    mActivityDelegate.execStartChildActivityInternal(mActivityGroupContainer,"third",intent3);

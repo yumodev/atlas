@@ -9,6 +9,10 @@
             android:name=".FirstBundleActivity"
             android:theme="@style/AppTheme.NoActionBar" />
 
+        <activity
+            android:name=".FirstBundleTestActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+
         <service
             android:name=".FirstBundleService"
             android:enabled="true"
