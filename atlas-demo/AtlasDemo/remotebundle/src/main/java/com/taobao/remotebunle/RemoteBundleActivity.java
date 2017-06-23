@@ -3,6 +3,8 @@ package com.taobao.remotebunle;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.SurfaceView;
+import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -17,6 +19,9 @@ public class RemoteBundleActivity extends AppCompatActivity {
     private XWalkView mXWalkView;
 
     protected void onXWalkReady() {
+        //解决XWalkView 引起的黑屏问题
+        SurfaceView surfaceView = new SurfaceView(this);
+        setContentView(surfaceView, new ViewGroup.LayoutParams(0,0));
         XWalkInitializer mXWalkInitializer = new XWalkInitializer(new XWalkInitializer.XWalkInitListener() {
             @Override
             public void onXWalkInitStarted() {

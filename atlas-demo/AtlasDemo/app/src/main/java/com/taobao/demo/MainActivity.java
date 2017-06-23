@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
         mActivityDelegate = new ActivityGroupDelegate(this,savedInstanceState);
         mActivityGroupContainer = (ViewGroup) findViewById(R.id.content);
-        switchToActivity("home","com.taobao.firstbundle.FirstBundleActivity");
+        switchToActivity("home","com.taobao.firstbundle.FirstBundleTestActivity");
     }
 
     public void switchToActivity(String key,String activityName){
