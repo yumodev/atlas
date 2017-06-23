@@ -26,8 +26,6 @@ public class RemoteDemoActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-
-
     }
 
 }

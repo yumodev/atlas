@@ -21,7 +21,7 @@ public class FirstBundleTestActivity extends AppCompatActivity {
 
     private void setWebViewContent(){
         mWebView = new WebView(this);
-        mWebView.loadUrl("http://www.baidu.com");
+        mWebView.loadUrl("https://m.baidu.com/");
         mWebView.setWebViewClient(new WebViewClient(){
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
@@ -29,5 +29,6 @@ public class FirstBundleTestActivity extends AppCompatActivity {
                 return false;
             }
         });
+        setContentView(mWebView);
     }
 }
