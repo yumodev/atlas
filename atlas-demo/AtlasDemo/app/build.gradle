@@ -103,7 +103,7 @@ dependencies {
     compile 'com.taobao.android:atlasupdate:1.1.4.7@aar'
 
     compile 'com.alibaba:fastjson:1.1.45.android@jar'
-    compile 'com.android.support.constraint:constraint-layout:1.0.0-alpha8'
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'com.android.support:recyclerview-v7:25.3.0'
 }
 
