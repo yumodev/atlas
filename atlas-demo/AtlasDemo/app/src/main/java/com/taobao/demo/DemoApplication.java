@@ -11,6 +11,8 @@ import android.taobao.atlas.runtime.ClassNotFoundInterceptorCallback;
 import android.text.TextUtils;
 import android.widget.Toast;
 
+import com.taobao.util.AppUtil;
+
 import org.osgi.framework.BundleException;
 
 import java.io.File;
@@ -64,5 +66,7 @@ public class DemoApplication extends Application {
             }
         });
 
+        AppUtil.setContext(getApplicationContext());
+        AppUtil.createCacheDir(getApplicationContext());
     }
 }

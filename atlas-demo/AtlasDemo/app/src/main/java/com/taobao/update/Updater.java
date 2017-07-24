@@ -268,23 +268,23 @@ public class Updater {
         if (null == info) return;
 
         File patchFile = new File(context.getExternalCacheDir(), "patch-" + info.updateVersion + "@" + info.baseVersion + ".tpatch");
-
-        try {
-            AtlasUpdater.dexpatchUpdate(context,info, patchFile, new AtlasUpdater.IDexpatchMonitor() {
-                @Override
-                public void merge(boolean success, String bundleName, long version, String errMsg) {
-                    Log.d("update", "merge: " + success + " " + bundleName + " " + version + " " + errMsg);
-                }
-
-                @Override
-                public void install(boolean success, String bundleName, long version, String errMsg) {
-                    Log.d("update", "install: " + success + " " + bundleName + " " + version + " " + errMsg);
-                }
-            });
-            Log.d("update", "update success");
-        } catch (Throwable e) {
-            Log.e("update", "更新失败", e);
-        }
+//
+//        try {
+//            AtlasUpdater.dexpatchUpdate(context,info, patchFile, new AtlasUpdater.IDexpatchMonitor() {
+//                @Override
+//                public void merge(boolean success, String bundleName, long version, String errMsg) {
+//                    Log.d("update", "merge: " + success + " " + bundleName + " " + version + " " + errMsg);
+//                }
+//
+//                @Override
+//                public void install(boolean success, String bundleName, long version, String errMsg) {
+//                    Log.d("update", "install: " + success + " " + bundleName + " " + version + " " + errMsg);
+//                }
+//            });
+//            Log.d("update", "update success");
+//        } catch (Throwable e) {
+//            Log.e("update", "更新失败", e);
+//        }
     }
 
     public static UpdateInfo loadUpdateInfo(Context context) {

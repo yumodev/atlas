@@ -10,6 +10,8 @@ import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -26,6 +28,10 @@ import android.widget.Toast;
 import com.middleware.dialog.Dialog;
 import com.taobao.android.ActivityGroupDelegate;
 import com.taobao.update.Updater;
+import com.taobao.util.AppUtil;
+import com.taobao.util.AtlasPluginUtil;
+import com.taobao.util.PluginDefine;
+import com.taobao.web.WebViewFragment;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -41,8 +47,10 @@ public class MainActivity extends AppCompatActivity
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
             switch (item.getItemId()) {
                 case R.id.navigation_home:
-                    switchToActivity("home","com.taobao.firstbundle.FirstBundleActivity");
-                    Toast.makeText(RuntimeVariables.androidApplication,"on click",Toast.LENGTH_SHORT).show();
+//                    switchToActivity("home","com.taobao.firstbundle.FirstBundleActivity");
+//                    Toast.makeText(RuntimeVariables.androidApplication,"on click",Toast.LENGTH_SHORT).show();
+
+                    showFragment(new WebViewFragment());
                     return true;
                 case R.id.navigation_dashboard:
                     switchToActivity("second","com.taobao.secondbundle.SecondBundleActivity");
@@ -77,7 +85,8 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
         mActivityDelegate = new ActivityGroupDelegate(this,savedInstanceState);
         mActivityGroupContainer = (ViewGroup) findViewById(R.id.content);
-        switchToActivity("home","com.taobao.firstbundle.FirstBundleActivity");
+        //switchToActivity("home","com.taobao.firstbundle.FirstBundleActivity");
+        showFragment(new WebViewFragment());
     }
 
     public void switchToActivity(String key,String activityName){
@@ -171,10 +180,22 @@ public class MainActivity extends AppCompatActivity
                 intent.setPackage(getPackageName());
                 intent.setClassName(this,"com.taobao.databindbundle.databind.DataBundleSampleActivity");
                 startActivity(intent);
-            }
+        }else if (id == R.id.nav_remote_bundle){
+                AtlasPluginUtil.installPlugin(PluginDefine.bundle_remote_name);
+                if (AtlasPluginUtil.existPlugin(PluginDefine.bundle_remote_name)){
+                    AppUtil.showToast("安装成功");
+                }else{
+                    AppUtil.showToast("安装失败");
+                }}
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void showFragment(Fragment fragment){
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.content, fragment, "test");
+        transaction.commit();
     }
 }
