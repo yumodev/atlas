@@ -42,7 +42,7 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     providedCompile project(':middlewarelibrary')
-    providedCompile project(':publicbundle')
+    //providedCompile project(':publicbundle')
 
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     providedCompile 'com.android.support:support-v4:25.3.0'

@@ -33,8 +33,8 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile project(":secondbundlelibrary");
-    providedCompile 'com.android.support:appcompat-v7:25.1.0'
-    providedCompile 'com.android.support:support-v4:25.3.0'
+    providedCompile 'com.android.support:appcompat-v7:25.3.1'
+    providedCompile 'com.android.support:support-v4:25.3.1'
     providedCompile 'com.android.support.constraint:constraint-layout:1.0.2'
     providedCompile project(':middlewarelibrary')
 

@@ -1,9 +1,9 @@
 package com.taobao.remotebunle;
 
-import android.app.Activity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 
-public class RemoteBundleActivity extends Activity {
+public class RemoteBundleActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

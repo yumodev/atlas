@@ -8,6 +8,9 @@ apply plugin: 'com.taobao.atlas'
 repositories {
     mavenLocal()
     jcenter()
+    flatDir {
+        dirs 'libs'
+    }
 }
 
 android {
@@ -94,14 +97,14 @@ dependencies {
 
 
     compile project(':middlewarelibrary')
-    compile project(':splashscreen')
+    //compile project(':splashscreen')
     compile project(':activitygroupcompat')
 
     bundleCompile project(':firstbundle')
-    bundleCompile project(':secondbundle')
+    //bundleCompile project(':secondbundle')
     bundleCompile project(':remotebundle')
     bundleCompile project(':publicbundle')
-    bundleCompile project(':databindbundle')
+    //bundleCompile project(':databindbundle')
 
     compile 'com.android.support:appcompat-v7:25.3.1'
     compile 'com.android.support:design:25.3.1'
