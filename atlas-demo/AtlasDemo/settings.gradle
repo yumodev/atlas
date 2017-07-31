@@ -1,4 +1,4 @@
-include ':middlewarelibrary'
+include ':middlewarelibrary', ':atlas_core'
 include ':secondbundlelibrary'
 include ':lottie'
 include ':activitygroupcompat'
